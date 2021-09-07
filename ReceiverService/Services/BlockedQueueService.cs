@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ReceiverService.Entities;
@@ -8,29 +9,34 @@ namespace ReceiverService.Services
 {
     public class BlockedQueueService
     {
-        public BlockingCollection<ExtendedRoot> bc = new BlockingCollection<ExtendedRoot>();
+        private ConcurrentQueue<ExtendedRoot> collection;
+        
+        public int CountOfElements { get; set; }
+
+        public BlockedQueueService()
+        {
+            collection = new ConcurrentQueue<ExtendedRoot>();
+        }
 
         public async Task Add(ExtendedRoot root)
         {
             Task t1 = Task.Run(() =>
             {
-                bc.Add(root);
-                bc.CompleteAdding();
+                collection.Enqueue(root);
+
+                CountOfElements = collection.Count;
+                
+                Console.WriteLine("complete adding");
             });
 
-            Task t2 = Task.Run(() =>
-            {
-                try
-                {
-                    while (true) Console.WriteLine(bc.Take());
-                }
-                catch (InvalidOperationException)
-                {
-                    Console.WriteLine("That's All!");
-                }
-            });
+            await Task.WhenAll(t1);
+        }
 
-            await Task.WhenAll(t1, t2);
+        public ExtendedRoot Take()
+        {
+            collection.TryDequeue(out var root);
+
+            return root;
         }
     }
 }

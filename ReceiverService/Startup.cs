@@ -41,6 +41,7 @@ namespace ReceiverService
             services.AddSingleton<IRedisRepository, RedisRepository>();
             services.AddSingleton<BlockedQueueService>();
             services.AddSingleton<RootToExtendedRootMapper>();
+            services.AddSingleton<ServiceBusSenderService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

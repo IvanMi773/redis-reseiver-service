@@ -13,17 +13,21 @@ using StackExchange.Redis;
 
 namespace ReceiverService.Services
 {
-    public class RedisReceiverService : IHostedService
+    public class RedisReceiverService : IHostedService, IDisposable
     {
         private readonly ILogger<RedisReceiverService> _logger;
         private readonly RedisProvider _redisProvider;
-        private static IConfiguration _configuration;
+        private IConfiguration _configuration;
         private readonly IRedisRepository _redisRepository;
         private readonly BlockedQueueService _blockedQueueService;
         private readonly RootToExtendedRootMapper _mapper;
         private readonly ServiceBusSenderService _serviceBusSenderService;
+        private Timer _timer;
+        private int TimeAfterReceivingLastEvent;
 
-        public RedisReceiverService(ILogger<RedisReceiverService> logger, IConfiguration configuration, RedisProvider redisProvider, IRedisRepository redisRepository, BlockedQueueService blockedQueueService, RootToExtendedRootMapper mapper, ServiceBusSenderService serviceBusSenderService)
+        public RedisReceiverService(ILogger<RedisReceiverService> logger, IConfiguration configuration,
+            RedisProvider redisProvider, IRedisRepository redisRepository, BlockedQueueService blockedQueueService,
+            RootToExtendedRootMapper mapper, ServiceBusSenderService serviceBusSenderService)
         {
             _logger = logger;
             _redisProvider = redisProvider;
@@ -31,39 +35,57 @@ namespace ReceiverService.Services
             _blockedQueueService = blockedQueueService;
             _mapper = mapper;
             _serviceBusSenderService = serviceBusSenderService;
-
-            if (_configuration == null)
-            {
-                _configuration = configuration;
-            }
+            _configuration = configuration;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            // IDatabase database = _redisProvider.GetDatabase();
-            // Console.WriteLine(database.ListLeftPop("roots"));
+            _timer = new Timer(ReceiveMessage, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(500));
 
-            ConnectionMultiplexer redis = ConnectionMultiplexer.Connect(_configuration["CacheConnection"]);
-            ISubscriber sub = redis.GetSubscriber();
-            
-            sub.SubscribeAsync("roots", (channel, message) => {
-                _logger.LogInformation("Received message: " + message + " from channel: " + channel);
-                var root = JsonSerializer.Deserialize<Root>(message);
-                var extendedRoot = _mapper.Map(root, 43);
-
-                _blockedQueueService.Add(extendedRoot);
-                if (_blockedQueueService.bc.Count == 5)
-                {
-                    // _serviceBusSenderService.SendMessage();
-                }
-            });
-            
             return Task.CompletedTask;
+        }
+
+        private async void ReceiveMessage(object state)
+        {
+            TimeAfterReceivingLastEvent += 500;
+            
+            IDatabase database = _redisProvider.GetDatabase();
+            var redisEvent = database.ListLeftPop("roots");
+
+            if (redisEvent.ToString() == null)
+            {
+                return;
+            }
+            
+            var extendedRoot = _mapper.Map(JsonSerializer.Deserialize<Root>(redisEvent), 43);
+            await _blockedQueueService.Add(extendedRoot);
+
+            if (_blockedQueueService.CountOfElements == 5 || TimeAfterReceivingLastEvent >= 2000)
+            {
+                var messages = new string[_blockedQueueService.CountOfElements];
+                for (int i = 0; i < _blockedQueueService.CountOfElements; i++)
+                {
+                    string msg = JsonSerializer.Serialize(_blockedQueueService.Take());
+                    messages[i] = msg;
+                }
+
+                await _serviceBusSenderService.SendMessage(messages);
+                _logger.LogInformation("sent messages");
+
+                TimeAfterReceivingLastEvent = 0;
+            }
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            _timer?.Change(Timeout.Infinite, 0);
+
+            return Task.CompletedTask;
+        }
+
+        public void Dispose()
+        {
+            _timer?.Dispose();
         }
     }
 }

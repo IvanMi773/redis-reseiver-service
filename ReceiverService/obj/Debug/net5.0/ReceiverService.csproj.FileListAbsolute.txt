@@ -34,3 +34,9 @@
 /home/imykhailov/RiderProjects/ReceiverService/ReceiverService/obj/Debug/net5.0/ref/ReceiverService.dll
 /home/imykhailov/RiderProjects/ReceiverService/ReceiverService/obj/Debug/net5.0/ReceiverService.pdb
 /home/imykhailov/RiderProjects/ReceiverService/ReceiverService/obj/Debug/net5.0/ReceiverService.genruntimeconfig.cache
+/home/imykhailov/RiderProjects/ReceiverService/ReceiverService/bin/Debug/net5.0/Azure.Core.dll
+/home/imykhailov/RiderProjects/ReceiverService/ReceiverService/bin/Debug/net5.0/Azure.Core.Amqp.dll
+/home/imykhailov/RiderProjects/ReceiverService/ReceiverService/bin/Debug/net5.0/Azure.Messaging.ServiceBus.dll
+/home/imykhailov/RiderProjects/ReceiverService/ReceiverService/bin/Debug/net5.0/Microsoft.Azure.Amqp.dll
+/home/imykhailov/RiderProjects/ReceiverService/ReceiverService/bin/Debug/net5.0/Microsoft.Bcl.AsyncInterfaces.dll
+/home/imykhailov/RiderProjects/ReceiverService/ReceiverService/bin/Debug/net5.0/System.Memory.Data.dll

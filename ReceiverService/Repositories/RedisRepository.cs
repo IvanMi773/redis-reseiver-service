@@ -6,24 +6,19 @@ namespace ReceiverService.Repositories
 {
     public class RedisRepository : IRedisRepository
     {
-        private readonly RedisProvider _redisConfig;
+        private readonly RedisProvider _redisProvider;
         private readonly ILogger<RedisRepository> _logger;
 
-        public RedisRepository(RedisProvider redisConfig, ILogger<RedisRepository> logger)
+        public RedisRepository(RedisProvider redisProvider, ILogger<RedisRepository> logger)
         {
-            _redisConfig = redisConfig;
+            _redisProvider = redisProvider;
             _logger = logger;
         }
 
-        public void PushStringToList(string str)
+        public void PushStringToList(string listName, string str)
         {
-            IDatabase cache = _redisConfig.GetDatabase();
-            _logger.LogInformation(cache.ListRightPush("roots", str).ToString());
+            IDatabase cache = _redisProvider.GetDatabase();
+            _logger.LogInformation(cache.ListRightPush(listName, str).ToString());
         }
-    }
-
-    public interface IRedisRepository
-    {
-        public void PushStringToList(string str);
     }
 }
