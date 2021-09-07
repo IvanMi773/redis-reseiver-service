@@ -8,19 +8,16 @@ namespace ReceiverService.Services
 {
     public class ServiceBusSenderService
     {
-        private static IConfiguration _configuration;
+        private readonly IConfiguration _configuration;
         private readonly ILogger<ServiceBusSenderService> _logger;
 
-        private static ServiceBusClient _client;
-        private static ServiceBusSender _sender;
+        private ServiceBusClient _client;
+        private ServiceBusSender _sender;
 
         public ServiceBusSenderService(IConfiguration configuration, ILogger<ServiceBusSenderService> logger)
         {
             _logger = logger;
-            if (_configuration == null)
-            {
-                _configuration = configuration;
-            }
+            _configuration = configuration;
         }
         
         public async Task SendMessage(string[] messages)
@@ -30,11 +27,15 @@ namespace ReceiverService.Services
 
             using ServiceBusMessageBatch messageBatch = await _sender.CreateMessageBatchAsync();
 
-            for (int i = 0; i < messages.Length; i++)
+            foreach (var t in messages)
             {
-                if (!messageBatch.TryAddMessage(new ServiceBusMessage(messages[i])))
+                try
                 {
-                    throw new Exception("The message is to large");
+                    messageBatch.TryAddMessage(new ServiceBusMessage(t));
+                }
+                catch (Exception)
+                {
+                    _logger.LogError("Cannot add message to batch");
                 }
             }
 
@@ -42,6 +43,10 @@ namespace ReceiverService.Services
             {
                 await _sender.SendMessagesAsync(messageBatch);
                 _logger.LogInformation("A batch has been published");
+            }
+            catch (Exception)
+            {
+                _logger.LogError("Error while sending batch");
             }
             finally
             {

@@ -3,30 +3,32 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using ReceiverService.Entities;
 
 namespace ReceiverService.Services
 {
     public class BlockedQueueService
     {
-        private ConcurrentQueue<ExtendedRoot> collection;
-        
+        private readonly ConcurrentQueue<ExtendedRoot> _collection;
+        private readonly ILogger<BlockedQueueService> _logger;
+
         public int CountOfElements { get; set; }
 
-        public BlockedQueueService()
+        public BlockedQueueService(ILogger<BlockedQueueService> logger)
         {
-            collection = new ConcurrentQueue<ExtendedRoot>();
+            _logger = logger;
+            _collection = new ConcurrentQueue<ExtendedRoot>();
         }
 
         public async Task Add(ExtendedRoot root)
         {
             Task t1 = Task.Run(() =>
             {
-                collection.Enqueue(root);
-
-                CountOfElements = collection.Count;
+                _collection.Enqueue(root);
+                CountOfElements = _collection.Count;
                 
-                Console.WriteLine("complete adding");
+                _logger.LogInformation("complete adding");
             });
 
             await Task.WhenAll(t1);
@@ -34,9 +36,15 @@ namespace ReceiverService.Services
 
         public ExtendedRoot Take()
         {
-            collection.TryDequeue(out var root);
+            _collection.TryPeek(out var root);
+            CountOfElements = _collection.Count;
 
             return root;
+        }
+
+        public void Clear()
+        {
+            _collection.Clear();
         }
     }
 }

@@ -2,47 +2,43 @@ using System;
 using System.Net.Sockets;
 using System.Threading;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
 
 namespace ReceiverService.Providers
 {
     public class RedisProvider
     {
-        private static IConfiguration Configuration { get; set; }
-        
-        private const string SecretName = "CacheConnection";
-        private static long _lastReconnectTicks = DateTimeOffset.MinValue.UtcTicks;
-        private static DateTimeOffset _firstErrorTime = DateTimeOffset.MinValue;
-        private static DateTimeOffset _previousErrorTime = DateTimeOffset.MinValue;
-        private static readonly object ReconnectLock = new object();
-        public static TimeSpan ReconnectMinFrequency => TimeSpan.FromSeconds(60);
-        public static TimeSpan ReconnectErrorThreshold => TimeSpan.FromSeconds(30);
-        public static int RetryMaxAttempts => 5;
-        private static Lazy<ConnectionMultiplexer> _lazyConnection = CreateConnection();
-        
-        public static ConnectionMultiplexer Connection
+        private long _lastReconnectTicks = DateTimeOffset.MinValue.UtcTicks;
+        private int RetryMaxAttempts => 5;
+        private DateTimeOffset _firstErrorTime = DateTimeOffset.MinValue;
+        private DateTimeOffset _previousErrorTime = DateTimeOffset.MinValue;
+        private TimeSpan ReconnectMinFrequency => TimeSpan.FromSeconds(60);
+        private TimeSpan ReconnectErrorThreshold => TimeSpan.FromSeconds(30);
+        private Lazy<ConnectionMultiplexer> _lazyConnection;
+        private ConnectionMultiplexer Connection => _lazyConnection.Value;
+        private readonly object _reconnectLock = new object();
+        private readonly IConfiguration _configuration;
+        private readonly ILogger<RedisProvider> _logger;
+
+        public RedisProvider(IConfiguration configuration, ILogger<RedisProvider> logger)
         {
-            get { return _lazyConnection.Value; }
-        }
-        
-        public RedisProvider(IConfiguration configuration)
-        {
-            if (Configuration == null)
-            {
-                Configuration = configuration;
-            }
+            _configuration = configuration;
+            _logger = logger;
+
+            _lazyConnection = CreateConnection();
         }
 
-        private static Lazy<ConnectionMultiplexer> CreateConnection()
+        private Lazy<ConnectionMultiplexer> CreateConnection()
         {
             return new Lazy<ConnectionMultiplexer>(() =>
             {
-                string cacheConnection = Configuration[SecretName];
+                var cacheConnection = _configuration["CacheConnection"];
                 return ConnectionMultiplexer.Connect(cacheConnection);
             });
         }
 
-        private static void CloseConnection(Lazy<ConnectionMultiplexer> oldConnection)
+        private void CloseConnection(Lazy<ConnectionMultiplexer> oldConnection)
         {
             if (oldConnection == null)
                 return;
@@ -53,21 +49,21 @@ namespace ReceiverService.Providers
             }
             catch (Exception)
             {
-                // Example error condition: if accessing oldConnection.Value causes a connection attempt and that fails.
+                _logger.LogError("Error while closing connection");
             }
         }
 
-        public static void ForceReconnect()
+        public void ForceReconnect()
         {
             var utcNow = DateTimeOffset.UtcNow;
-            long previousTicks = Interlocked.Read(ref _lastReconnectTicks);
+            var previousTicks = Interlocked.Read(ref _lastReconnectTicks);
             var previousReconnectTime = new DateTimeOffset(previousTicks, TimeSpan.Zero);
-            TimeSpan elapsedSinceLastReconnect = utcNow - previousReconnectTime;
+            var elapsedSinceLastReconnect = utcNow - previousReconnectTime;
 
             if (elapsedSinceLastReconnect < ReconnectMinFrequency)
                 return;
 
-            lock (ReconnectLock)
+            lock (_reconnectLock)
             {
                 utcNow = DateTimeOffset.UtcNow;
                 elapsedSinceLastReconnect = utcNow - previousReconnectTime;
@@ -82,10 +78,10 @@ namespace ReceiverService.Providers
                 if (elapsedSinceLastReconnect < ReconnectMinFrequency)
                     return; 
 
-                TimeSpan elapsedSinceFirstError = utcNow - _firstErrorTime;
-                TimeSpan elapsedSinceMostRecentError = utcNow - _previousErrorTime;
+                var elapsedSinceFirstError = utcNow - _firstErrorTime;
+                var elapsedSinceMostRecentError = utcNow - _previousErrorTime;
 
-                bool shouldReconnect =
+                var shouldReconnect =
                     elapsedSinceFirstError >=
                     ReconnectErrorThreshold 
                     && elapsedSinceMostRecentError <=
@@ -99,17 +95,17 @@ namespace ReceiverService.Providers
                 _firstErrorTime = DateTimeOffset.MinValue;
                 _previousErrorTime = DateTimeOffset.MinValue;
 
-                Lazy<ConnectionMultiplexer> oldConnection = _lazyConnection;
+                var oldConnection = _lazyConnection;
                 CloseConnection(oldConnection);
                 _lazyConnection = CreateConnection();
                 Interlocked.Exchange(ref _lastReconnectTicks, utcNow.UtcTicks);
             }
         }
 
-        private static T BasicRetry<T>(Func<T> func)
+        private T BasicRetry<T>(Func<T> func)
         {
-            int reconnectRetry = 0;
-            int disposedRetry = 0;
+            var reconnectRetry = 0;
+            var disposedRetry = 0;
 
             while (true)
             {
@@ -121,14 +117,14 @@ namespace ReceiverService.Providers
                 {
                     reconnectRetry++;
                     if (reconnectRetry > RetryMaxAttempts)
-                        throw;
+                        _logger.LogError("Error while retrying to open connection");
                     ForceReconnect();
                 }
                 catch (ObjectDisposedException)
                 {
                     disposedRetry++;
                     if (disposedRetry > RetryMaxAttempts)
-                        throw;
+                        _logger.LogError("Error while retrying to open connection");
                 }
             }
         }
