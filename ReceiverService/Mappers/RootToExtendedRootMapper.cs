@@ -2,11 +2,19 @@ using ReceiverService.Entities;
 
 namespace ReceiverService.Mappers
 {
-    public class RootToExtendedRootMapper
+    public static class RootToExtendedRootMapper
     {
-        public ExtendedRoot Map(Root root, int price)
+        public static ExtendedRoot Map(Root root, int price)
         {
-            return new ExtendedRoot(root?.Type, root?.Id, root?.Timestamp, root?.UserId, root?.DeviceId, price);
+            return new ExtendedRoot
+            {
+                Price = price,
+                Id = root?.Id,
+                Timestamp = root?.Timestamp,
+                Type = root?.Type,
+                UserId = root?.UserId,
+                DeviceId = root?.DeviceId
+            };
         }
     }
 }

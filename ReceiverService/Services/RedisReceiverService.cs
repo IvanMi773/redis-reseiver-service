@@ -13,17 +13,15 @@ namespace ReceiverService.Services
     public class RedisReceiverService : IHostedService, IDisposable
     {
         private readonly BlockedQueueService _blockedQueueService;
-        private readonly RootToExtendedRootMapper _mapper;
         private readonly ServiceBusSenderService _serviceBusSenderService;
         private readonly IRedisRepository _redisRepository;
         private Timer _timer;
         private int _timeAfterSentLastButch;
 
-        public RedisReceiverService(BlockedQueueService blockedQueueService, RootToExtendedRootMapper mapper, 
-            ServiceBusSenderService serviceBusSenderService, IRedisRepository redisRepository)
+        public RedisReceiverService(BlockedQueueService blockedQueueService, ServiceBusSenderService serviceBusSenderService, 
+            IRedisRepository redisRepository)
         {
             _blockedQueueService = blockedQueueService;
-            _mapper = mapper;
             _serviceBusSenderService = serviceBusSenderService;
             _redisRepository = redisRepository;
         }
@@ -51,7 +49,7 @@ namespace ReceiverService.Services
             }
 
             _timeAfterSentLastButch = 0;
-            var extendedRoot = _mapper.Map(JsonSerializer.Deserialize<Root>(redisEvent), 43);
+            var extendedRoot = RootToExtendedRootMapper.Map(JsonSerializer.Deserialize<Root>(redisEvent), 43);
             await _blockedQueueService.Add(extendedRoot);
 
             if (_blockedQueueService.CountOfElements == 5)

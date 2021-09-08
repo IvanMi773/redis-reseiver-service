@@ -35,7 +35,6 @@ namespace ReceiverService
             services.AddSingleton<RedisProvider>();
             services.AddSingleton<IRedisRepository, RedisRepository>();
             services.AddSingleton<BlockedQueueService>();
-            services.AddSingleton<RootToExtendedRootMapper>();
             services.AddSingleton<ServiceBusSenderService>();
         }
 
