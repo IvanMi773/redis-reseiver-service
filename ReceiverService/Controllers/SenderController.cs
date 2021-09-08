@@ -1,3 +1,4 @@
+using System;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using ReceiverService.Entities;
@@ -15,9 +16,18 @@ namespace ReceiverService.Controllers
         }
         
         [HttpPost("/send")]
-        public void Send([FromBody] Root root)
+        public string Send([FromBody] Root root)
         {
-            _redisRepository.PushStringToList("roots", JsonSerializer.Serialize(root));
+            try
+            {
+                _redisRepository.PushStringToList("roots", JsonSerializer.Serialize(root));
+                
+                return "Ok";
+            }
+            catch (Exception)
+            {
+                return "Error while push message to redis";
+            }
         }
     }
 }
