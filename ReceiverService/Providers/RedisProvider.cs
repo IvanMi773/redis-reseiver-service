@@ -7,7 +7,7 @@ using StackExchange.Redis;
 
 namespace ReceiverService.Providers
 {
-    public class RedisProvider
+    public class RedisProvider : IRedisProvider
     {
         private long _lastReconnectTicks = DateTimeOffset.MinValue.UtcTicks;
         private int RetryMaxAttempts => 5;
@@ -53,7 +53,7 @@ namespace ReceiverService.Providers
             }
         }
 
-        public void ForceReconnect()
+        private void ForceReconnect()
         {
             var utcNow = DateTimeOffset.UtcNow;
             var previousTicks = Interlocked.Read(ref _lastReconnectTicks);
@@ -132,16 +132,6 @@ namespace ReceiverService.Providers
         public IDatabase GetDatabase()
         {
             return BasicRetry(() => Connection.GetDatabase());
-        }
-
-        public System.Net.EndPoint[] GetEndPoints()
-        {
-            return BasicRetry(() => Connection.GetEndPoints());
-        }
-
-        public IServer GetServer(string host, int port)
-        {
-            return BasicRetry(() => Connection.GetServer(host, port));
         }
     }
 }
