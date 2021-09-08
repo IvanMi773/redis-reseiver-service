@@ -1,45 +1,37 @@
-using System;
 using System.Collections.Concurrent;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using ReceiverService.Entities;
 
 namespace ReceiverService.Services
 {
-    public class BlockedQueueService
+    public class BlockedQueueService : IBlockedQueueService
     {
-        private readonly ConcurrentQueue<ExtendedRoot> _collection;
+        private readonly ConcurrentQueue<Root> _collection;
         private readonly ILogger<BlockedQueueService> _logger;
-
-        public int CountOfElements { get; set; }
 
         public BlockedQueueService(ILogger<BlockedQueueService> logger)
         {
             _logger = logger;
-            _collection = new ConcurrentQueue<ExtendedRoot>();
+            _collection = new ConcurrentQueue<Root>();
         }
 
-        public async Task Add(ExtendedRoot root)
+        public void Add(Root t)
         {
-            Task t1 = Task.Run(() =>
-            {
-                _collection.Enqueue(root);
-                CountOfElements = _collection.Count;
-                
-                _logger.LogInformation("complete adding");
-            });
-
-            await Task.WhenAll(t1);
+            _collection.Enqueue(t);
+            
+            _logger.LogInformation("complete adding");
         }
 
-        public ExtendedRoot Take()
+        public Root Take()
         {
             _collection.TryPeek(out var root);
-            CountOfElements = _collection.Count;
 
             return root;
+        }
+
+        public int CountOfElements()
+        {
+            return _collection.Count;
         }
 
         public void Clear()

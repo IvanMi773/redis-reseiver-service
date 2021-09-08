@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Logging;
 using ReceiverService.Providers;
 using StackExchange.Redis;
 
@@ -8,7 +7,7 @@ namespace ReceiverService.Repositories
     {
         private readonly IDatabase _database;
 
-        public RedisRepository(RedisProvider redisProvider)
+        public RedisRepository(IRedisProvider redisProvider)
         {
             _database = redisProvider.GetDatabase();
         }
@@ -20,7 +19,7 @@ namespace ReceiverService.Repositories
 
         public string PopStringFromList(string listName)
         {
-            return _database.ListLeftPop("roots");
+            return _database.ListLeftPop(listName);
         }
     }
 }

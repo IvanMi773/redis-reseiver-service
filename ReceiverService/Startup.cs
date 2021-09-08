@@ -1,3 +1,4 @@
+using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
@@ -6,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using ReceiverService.Entities;
 using ReceiverService.Mappers;
 using ReceiverService.Providers;
 using ReceiverService.Repositories;
@@ -32,10 +34,11 @@ namespace ReceiverService
             });
 
             services.AddHostedService<RedisReceiverService>();
-            services.AddSingleton<RedisProvider>();
+            services.AddSingleton<IRedisProvider, RedisProvider>();
             services.AddSingleton<IRedisRepository, RedisRepository>();
-            services.AddSingleton<BlockedQueueService>();
-            services.AddSingleton<ServiceBusSenderService>();
+            services.AddSingleton<IBlockedQueueService, BlockedQueueService>();
+            services.AddSingleton<IServiceBusSenderService, ServiceBusSenderService>();
+            services.AddSingleton<IProcessMessagesService, ProcessMessagesService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

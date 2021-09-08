@@ -6,32 +6,29 @@ using Microsoft.Extensions.Logging;
 
 namespace ReceiverService.Services
 {
-    public class ServiceBusSenderService
+    public class ServiceBusSenderService : IServiceBusSenderService, IDisposable
     {
-        private readonly IConfiguration _configuration;
         private readonly ILogger<ServiceBusSenderService> _logger;
-
-        private ServiceBusClient _client;
-        private ServiceBusSender _sender;
+        private readonly ServiceBusClient _client;
+        private readonly ServiceBusSender _sender;
 
         public ServiceBusSenderService(IConfiguration configuration, ILogger<ServiceBusSenderService> logger)
         {
             _logger = logger;
-            _configuration = configuration;
+            
+            _client = new ServiceBusClient(configuration["ServiceBusConnection"]);
+            _sender = _client.CreateSender(configuration["TopicName"]);
         }
         
         public async Task SendMessage(string[] messages)
         {
-            _client = new ServiceBusClient(_configuration["ServiceBusConnection"]);
-            _sender = _client.CreateSender(_configuration["TopicName"]);
-
             using ServiceBusMessageBatch messageBatch = await _sender.CreateMessageBatchAsync();
 
-            foreach (var t in messages)
+            foreach (var message in messages)
             {
                 try
                 {
-                    messageBatch.TryAddMessage(new ServiceBusMessage(t));
+                    messageBatch.TryAddMessage(new ServiceBusMessage(message));
                 }
                 catch (Exception)
                 {
@@ -48,11 +45,12 @@ namespace ReceiverService.Services
             {
                 _logger.LogError("Error while sending batch");
             }
-            finally
-            {
-                await _sender.DisposeAsync();
-                await _client.DisposeAsync();
-            }
+        }
+
+        public async void Dispose()
+        {
+            await _sender.DisposeAsync();
+            await _client.DisposeAsync();
         }
     }
 }

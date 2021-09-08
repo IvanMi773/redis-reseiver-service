@@ -5,72 +5,69 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ReceiverService.Entities;
-using ReceiverService.Mappers;
 using ReceiverService.Repositories;
 
 namespace ReceiverService.Services
 {
     public class RedisReceiverService : IHostedService, IDisposable
     {
-        private readonly BlockedQueueService _blockedQueueService;
-        private readonly ServiceBusSenderService _serviceBusSenderService;
+        private readonly IBlockedQueueService _blockedQueueService;
         private readonly IRedisRepository _redisRepository;
         private Timer _timer;
-        private int _timeAfterSentLastButch;
+        private readonly ILogger<RedisReceiverService> _logger;
+        private readonly IProcessMessagesService _processMessagesService;
 
-        public RedisReceiverService(BlockedQueueService blockedQueueService, ServiceBusSenderService serviceBusSenderService, 
-            IRedisRepository redisRepository)
+        public RedisReceiverService(IBlockedQueueService blockedQueueService,
+            IRedisRepository redisRepository, ILogger<RedisReceiverService> logger,
+            IProcessMessagesService processMessagesService)
         {
             _blockedQueueService = blockedQueueService;
-            _serviceBusSenderService = serviceBusSenderService;
             _redisRepository = redisRepository;
+            _logger = logger;
+            _processMessagesService = processMessagesService;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            _timer = new Timer(ReceiveMessage, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(500));
+            _timer = new Timer(ReceiveMessage, null, TimeSpan.Zero, TimeSpan.FromSeconds(2));
 
             return Task.CompletedTask;
         }
 
-        private async void ReceiveMessage(object state)
+        private void ReceiveMessage(object state)
         {
-            var redisEvent = _redisRepository.PopStringFromList("roots");
-
-            if (_timeAfterSentLastButch >= 2000 && _blockedQueueService.CountOfElements >= 1)
+            var isAddedEvent = false;
+            while (true)
             {
-                SendMessages();
-            }
-            
-            if (string.IsNullOrEmpty(redisEvent))
-            {
-                _timeAfterSentLastButch += 200;
-                return;
-            }
+                string redisEvent;
+                
+                try
+                {
+                    redisEvent = _redisRepository.PopStringFromList("roots");
+                }
+                catch (Exception)
+                {
+                    _logger.LogError("Error while pop message from redis");
+                    return;
+                }
 
-            _timeAfterSentLastButch = 0;
-            var extendedRoot = RootToExtendedRootMapper.Map(JsonSerializer.Deserialize<Root>(redisEvent), 43);
-            await _blockedQueueService.Add(extendedRoot);
+                if (string.IsNullOrEmpty(redisEvent))
+                {
+                    if (!isAddedEvent && _blockedQueueService.CountOfElements() >= 1)
+                    {
+                        _processMessagesService.GetMessagesFromQueueAndSendToServiceBus();
+                    }
 
-            if (_blockedQueueService.CountOfElements == 5)
-            {
-                SendMessages();
+                    break;
+                }
+
+                _blockedQueueService.Add(JsonSerializer.Deserialize<Root>(redisEvent));
+                isAddedEvent = true;
+                if (_blockedQueueService.CountOfElements() == 5)
+                {
+                    _processMessagesService.GetMessagesFromQueueAndSendToServiceBus();
+                }
             }
-        }
-
-        private async void SendMessages()
-        {
-            _timeAfterSentLastButch = 0;
-            var messages = new string[_blockedQueueService.CountOfElements];
-            for (var i = 0; i < _blockedQueueService.CountOfElements; i++)
-            {
-                var msg = JsonSerializer.Serialize(_blockedQueueService.Take());
-                messages[i] = msg;
-            }
-
-            _blockedQueueService.Clear();
-            await _serviceBusSenderService.SendMessage(messages);
-            _timeAfterSentLastButch = 0;
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

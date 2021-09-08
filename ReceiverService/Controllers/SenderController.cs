@@ -6,11 +6,11 @@ using ReceiverService.Repositories;
 
 namespace ReceiverService.Controllers
 {
-    public class TestController : ControllerBase
+    public class SenderController : ControllerBase
     {
         private readonly IRedisRepository _redisRepository;
         
-        public TestController(IRedisRepository redisRepository)
+        public SenderController(IRedisRepository redisRepository)
         {
             _redisRepository = redisRepository;
         }
