@@ -1,6 +1,6 @@
 using ReceiverService.Entities;
 
-namespace ReceiverService.Services
+namespace ReceiverService.Services.BlockedQueue
 {
     public interface IBlockedQueueService
     {

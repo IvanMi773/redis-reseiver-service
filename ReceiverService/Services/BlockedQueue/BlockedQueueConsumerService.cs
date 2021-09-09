@@ -7,8 +7,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ReceiverService.Entities;
 using ReceiverService.Mappers;
+using ReceiverService.Services.ServiceBus;
 
-namespace ReceiverService.Services
+namespace ReceiverService.Services.BlockedQueue
 {
     public class BlockedQueueConsumerService : IHostedService
     {

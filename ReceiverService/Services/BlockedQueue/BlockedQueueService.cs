@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using ReceiverService.Entities;
 
-namespace ReceiverService.Services
+namespace ReceiverService.Services.BlockedQueue
 {
     public class BlockedQueueService : IBlockedQueueService
     {

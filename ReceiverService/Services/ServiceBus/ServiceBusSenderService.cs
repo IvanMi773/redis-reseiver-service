@@ -5,7 +5,7 @@ using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace ReceiverService.Services
+namespace ReceiverService.Services.ServiceBus
 {
     public class ServiceBusSenderService : IServiceBusSenderService, IDisposable
     {

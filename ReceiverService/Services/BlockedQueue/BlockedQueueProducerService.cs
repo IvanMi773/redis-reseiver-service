@@ -6,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ReceiverService.Entities;
 using ReceiverService.Repositories;
+using ReceiverService.Services.BlockedQueue;
 
 namespace ReceiverService.Services
 {
