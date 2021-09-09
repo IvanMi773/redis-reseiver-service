@@ -33,12 +33,12 @@ namespace ReceiverService
                 c.SwaggerDoc("v1", new OpenApiInfo {Title = "ReceiverService", Version = "v1"});
             });
 
-            services.AddHostedService<RedisReceiverService>();
+            services.AddHostedService<BlockedQueueProducerService>();
             services.AddSingleton<IRedisProvider, RedisProvider>();
             services.AddSingleton<IRedisRepository, RedisRepository>();
             services.AddSingleton<IBlockedQueueService, BlockedQueueService>();
             services.AddSingleton<IServiceBusSenderService, ServiceBusSenderService>();
-            services.AddSingleton<IProcessMessagesService, ProcessMessagesService>();
+            services.AddHostedService<BlockedQueueConsumerService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

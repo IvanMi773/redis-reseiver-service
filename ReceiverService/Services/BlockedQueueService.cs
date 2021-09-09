@@ -24,7 +24,7 @@ namespace ReceiverService.Services
 
         public Root Take()
         {
-            _collection.TryPeek(out var root);
+            _collection.TryDequeue(out var root);
 
             return root;
         }
@@ -32,11 +32,6 @@ namespace ReceiverService.Services
         public int CountOfElements()
         {
             return _collection.Count;
-        }
-
-        public void Clear()
-        {
-            _collection.Clear();
         }
     }
 }

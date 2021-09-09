@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Configuration;
@@ -20,7 +21,7 @@ namespace ReceiverService.Services
             _sender = _client.CreateSender(configuration["TopicName"]);
         }
         
-        public async Task SendMessage(string[] messages)
+        public async Task SendMessage(List<string> messages)
         {
             using ServiceBusMessageBatch messageBatch = await _sender.CreateMessageBatchAsync();
 

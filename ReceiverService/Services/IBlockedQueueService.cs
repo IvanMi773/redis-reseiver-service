@@ -9,7 +9,5 @@ namespace ReceiverService.Services
         public Root Take();
 
         public int CountOfElements();
-
-        public void Clear();
     }
 }
