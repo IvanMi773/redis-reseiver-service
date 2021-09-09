@@ -16,6 +16,7 @@ namespace ReceiverService.Services.BlockedQueue
         private readonly IBlockedQueueService _blockedQueueService;
         private readonly IServiceBusSenderService _serviceBusSenderService;
         private readonly ILogger<BlockedQueueConsumerService> _logger;
+        private Timer _timer;
 
         public BlockedQueueConsumerService(IBlockedQueueService blockedQueueService,
             IServiceBusSenderService serviceBusSenderService, ILogger<BlockedQueueConsumerService> logger)
@@ -25,45 +26,41 @@ namespace ReceiverService.Services.BlockedQueue
             _logger = logger;
         }
 
-        private void ConsumeMessagesFromQueue()
+        private void ConsumeMessagesFromQueue(object state)
         {
             var messages = new List<string>();
-            while (true)
+            while (_blockedQueueService.CountOfElements() > 0)
             {
-                while (_blockedQueueService.CountOfElements() > 0)
+                ExtendedRoot extendedRoot;
+                try
                 {
-                    ExtendedRoot extendedRoot;
-                    try
-                    {
-                        extendedRoot = RootToExtendedRootMapper.Map(_blockedQueueService.Take(), 43);
-                    }
-                    catch (InvalidOperationException)
-                    {
-                        _logger.LogError("Error with getting message from queue");
-                        continue;
-                    }
-                    
-                    var msg = JsonSerializer.Serialize(extendedRoot);
-                    messages.Add(msg);
-
-                    if (messages.Count == 5)
-                    {
-                        _serviceBusSenderService.SendMessage(messages);
-                    }
+                    extendedRoot = RootToExtendedRootMapper.Map(_blockedQueueService.Take(), 43);
                 }
-                Thread.Sleep(2000);
+                catch (InvalidOperationException)
+                {
+                    _logger.LogError("Error with getting message from queue");
+                    break;
+                }
                 
-                if (messages.Count >= 1)
+                var msg = JsonSerializer.Serialize(extendedRoot);
+                messages.Add(msg);
+                if (messages.Count == 5)
                 {
                     _serviceBusSenderService.SendMessage(messages);
+                    return;
                 }
-                messages = new List<string>();
+            }
+            
+            if (messages.Count >= 1)
+            {
+                _serviceBusSenderService.SendMessage(messages);
             }
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            Task.Run(ConsumeMessagesFromQueue, cancellationToken);
+            _timer = new Timer(ConsumeMessagesFromQueue, null, TimeSpan.Zero, TimeSpan.FromSeconds(2));
+            
             return Task.CompletedTask;
         }
 
