@@ -7,12 +7,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using ReceiverService.Entities;
-using ReceiverService.Mappers;
 using ReceiverService.Providers;
 using ReceiverService.Repositories;
 using ReceiverService.Services;
 using ReceiverService.Services.BlockedQueue;
+using ReceiverService.Services.Events;
 using ReceiverService.Services.ServiceBus;
 
 namespace ReceiverService
@@ -35,12 +34,13 @@ namespace ReceiverService
                 c.SwaggerDoc("v1", new OpenApiInfo {Title = "ReceiverService", Version = "v1"});
             });
 
-            services.AddHostedService<BlockedQueueProducerService>();
+            services.AddHostedService<EventServicesRunner>();
             services.AddSingleton<IRedisProvider, RedisProvider>();
             services.AddSingleton<IRedisRepository, RedisRepository>();
             services.AddSingleton<IBlockedQueueService, BlockedQueueService>();
             services.AddSingleton<IServiceBusSenderService, ServiceBusSenderService>();
-            services.AddHostedService<BlockedQueueConsumerService>();
+            services.AddSingleton<IEventProducerService, EventProducerService>();
+            services.AddSingleton<IEventConsumerService, EventConsumerService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -6,8 +6,6 @@ namespace ReceiverService.Services.BlockedQueue
     {
         public void Add(Root t);
 
-        public Root Take();
-
-        public int CountOfElements();
+        public Root Take(int milliseconds);
     }
 }
