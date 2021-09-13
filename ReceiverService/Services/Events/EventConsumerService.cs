@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
+using ReceiverService.Entities;
 using ReceiverService.Mappers;
 using ReceiverService.Services.BlockedQueue;
 using ReceiverService.Services.ServiceBus;
@@ -11,33 +13,36 @@ namespace ReceiverService.Services.Events
     {
         private readonly IBlockedQueueService _blockedQueueService;
         private readonly IServiceBusSenderService _serviceBusSenderService;
-        private List<string> _messages;
+        private readonly List<string> _messages;
 
-        public EventConsumerService(IBlockedQueueService blockedQueueService, IServiceBusSenderService serviceBusSenderService)
+        public EventConsumerService(IBlockedQueueService blockedQueueService,
+            IServiceBusSenderService serviceBusSenderService)
         {
             _blockedQueueService = blockedQueueService;
             _serviceBusSenderService = serviceBusSenderService;
-            _messages = new List<string>(); 
+            _messages = new List<string>();
         }
 
-        public void ConsumeMessagesFromQueue()
+        public Task ConsumeMessagesFromQueue()
         {
-            Task.Run(() =>
+            return Task.Factory.StartNew(() =>
             {
                 while (!_blockedQueueService.IsCompleted())
                 {
                     var root = _blockedQueueService.Take(2000);
-                    
+
                     if (root == null)
                     {
                         if (_messages.Count >= 1)
                         {
                             SendMessages();
                         }
+
                         continue;
                     }
-                    
-                    var serializedExtendedRoot = JsonSerializer.Serialize(RootToExtendedRootMapper.Map(root, 43));
+
+                    var rt = RootToExtendedRootMapper.Map(root, 43);
+                    var serializedExtendedRoot = JsonSerializer.Serialize(rt);
                     _messages.Add(serializedExtendedRoot);
                     if (_messages.Count == 5)
                     {
@@ -50,7 +55,7 @@ namespace ReceiverService.Services.Events
         private void SendMessages()
         {
             _serviceBusSenderService.SendMessage(_messages);
-            _messages = new List<string>();
+            _messages.Clear();
         }
     }
 }

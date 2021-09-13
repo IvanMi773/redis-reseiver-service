@@ -40,3 +40,9 @@
 /home/imykhailov/RiderProjects/ReceiverService/ReceiverService/bin/Debug/net5.0/Microsoft.Azure.Amqp.dll
 /home/imykhailov/RiderProjects/ReceiverService/ReceiverService/bin/Debug/net5.0/Microsoft.Bcl.AsyncInterfaces.dll
 /home/imykhailov/RiderProjects/ReceiverService/ReceiverService/bin/Debug/net5.0/System.Memory.Data.dll
+/home/imykhailov/RiderProjects/ReceiverService/ReceiverService/bin/Debug/net5.0/Castle.Core.dll
+/home/imykhailov/RiderProjects/ReceiverService/ReceiverService/bin/Debug/net5.0/Moq.dll
+/home/imykhailov/RiderProjects/ReceiverService/ReceiverService/bin/Debug/net5.0/xunit.abstractions.dll
+/home/imykhailov/RiderProjects/ReceiverService/ReceiverService/bin/Debug/net5.0/xunit.assert.dll
+/home/imykhailov/RiderProjects/ReceiverService/ReceiverService/bin/Debug/net5.0/xunit.core.dll
+/home/imykhailov/RiderProjects/ReceiverService/ReceiverService/bin/Debug/net5.0/xunit.execution.dotnet.dll
