@@ -7,5 +7,7 @@ namespace ReceiverService.Services.BlockedQueue
         public void Add(Root t);
 
         public Root Take(int milliseconds);
+
+        public bool IsCompleted();
     }
 }

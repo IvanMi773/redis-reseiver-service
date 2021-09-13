@@ -24,7 +24,7 @@ namespace ReceiverService.Services.Events
         {
             Task.Run(() =>
             {
-                while (true)
+                while (!_blockedQueueService.IsCompleted())
                 {
                     var root = _blockedQueueService.Take(2000);
                     

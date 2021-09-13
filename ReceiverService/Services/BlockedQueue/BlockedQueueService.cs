@@ -14,6 +14,11 @@ namespace ReceiverService.Services.BlockedQueue
             _logger = logger;
             _collection = new BlockingCollection<Root>();
         }
+
+        public bool IsCompleted()
+        {
+            return _collection.IsCompleted;
+        }
         
         public void Add(Root root)
         {
