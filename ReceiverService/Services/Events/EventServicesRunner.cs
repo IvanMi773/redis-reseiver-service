@@ -1,9 +1,8 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
-using ReceiverService.Services.Events;
 
-namespace ReceiverService.Services
+namespace ReceiverService.Services.Events
 {
     public class EventServicesRunner : IHostedService
     {
