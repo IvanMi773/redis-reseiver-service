@@ -106,27 +106,5 @@ namespace ReceiverServiceTests.Services.Events
                 Times.Exactly(2)
             );
         }
-        
-        [Fact]
-        public void Shouldnt_Throw_When_Root_Is_Null()
-        {
-            // Arrange
-            var blockedQueueServiceMock = new Mock<IBlockedQueueService>();
-            var serviceBusSenderServiceMock = new Mock<IServiceBusSenderService>();
-            blockedQueueServiceMock.Setup(service => service.IsCompleted()).Returns(false);
-
-            var eventConsumerService =
-                new EventConsumerService(blockedQueueServiceMock.Object, serviceBusSenderServiceMock.Object);
-
-            // Act
-            eventConsumerService.ConsumeMessagesFromQueue();
-            Thread.Sleep(100);
-
-            // Assert
-            serviceBusSenderServiceMock.Verify(
-                service => service.SendMessage(It.IsAny<List<string>>()),
-                Times.Never
-            );
-        }
     }
 }
