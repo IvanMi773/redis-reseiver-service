@@ -11,14 +11,21 @@ namespace ReceiverServiceTests.Services.Events
 {
     public class EventConsumerServiceTest
     {
-        private Root root = new() {Id = "test", Timestamp = "test", Type = "test", UserId = "test", DeviceId = "test"};
+        private Root root;
+        private Mock<IBlockedQueueService> blockedQueueServiceMock;
+        private Mock<IServiceBusSenderService> serviceBusSenderServiceMock;
 
+        public EventConsumerServiceTest()
+        {
+            root = new() {Id = "test", Timestamp = "test", Type = "test", UserId = "test", DeviceId = "test"};
+            blockedQueueServiceMock = new Mock<IBlockedQueueService>();
+            serviceBusSenderServiceMock = new Mock<IServiceBusSenderService>();
+        }
+        
         [Fact]
-        public void Should_Return_When_Blocked_Collection_Is_Completed()
+        public void ConsumeMessagesFromQueue_CollectionIsCompleted_EndTask()
         {
             // Arrange
-            var blockedQueueServiceMock = new Mock<IBlockedQueueService>();
-            var serviceBusSenderServiceMock = new Mock<IServiceBusSenderService>();
             blockedQueueServiceMock.Setup(service => service.IsCompleted()).Returns(true);
 
             var eventConsumerService =
@@ -33,11 +40,9 @@ namespace ReceiverServiceTests.Services.Events
         }
 
         [Fact]
-        public void Shouldnt_Send_Messages_When_Blocking_Collection_Is_Empty()
+        public void ConsumeMessagesFromQueue_EmptyCollection_NothingWasSent()
         {
             // Arrange
-            var blockedQueueServiceMock = new Mock<IBlockedQueueService>();
-            var serviceBusSenderServiceMock = new Mock<IServiceBusSenderService>();
             blockedQueueServiceMock.Setup(service => service.IsCompleted()).Returns(false);
 
             var eventConsumerService =
@@ -45,31 +50,35 @@ namespace ReceiverServiceTests.Services.Events
 
             // Act
             eventConsumerService.ConsumeMessagesFromQueue();
+            Thread.Sleep(100);
 
             // Assert
             serviceBusSenderServiceMock.Verify(service => service.SendMessage(It.IsAny<List<string>>()), Times.Never);
         }
 
         [Fact]
-        public void Should_Add_Five_Messages_And_Send_In_One_Batch()
+        public void ConsumeMessagesFromQueue_FiveMessagesInQueue_SendInOneBatch()
         {
             // Arrange
-            var blockedQueueServiceMock = new Mock<IBlockedQueueService>();
-            var serviceBusSenderServiceMock = new Mock<IServiceBusSenderService>();
             blockedQueueServiceMock.Setup(service => service.IsCompleted()).Returns(false);
             blockedQueueServiceMock.SetupSequence(service => service.Take(It.IsAny<int>()))
                 .Returns(root)
                 .Returns(root)
                 .Returns(root)
                 .Returns(root)
-                .Returns(root);
+                .Returns(root)
+                .Returns(() =>
+                {
+                    Thread.Sleep(2000);
+                    return null;
+                });
 
             var eventConsumerService =
                 new EventConsumerService(blockedQueueServiceMock.Object, serviceBusSenderServiceMock.Object);
 
             // Act
             eventConsumerService.ConsumeMessagesFromQueue();
-            Thread.Sleep(500);
+            Thread.Sleep(2500);
 
             // Assert
             serviceBusSenderServiceMock.Verify(
@@ -79,11 +88,9 @@ namespace ReceiverServiceTests.Services.Events
         }
 
         [Fact]
-        public void Should_Add_Six_Messages_And_Send_In_Two_Batches()
+        public void ConsumeMessagesFromQueue_SixMessagesInQueue_SendInTwoBatches()
         {
             // Arrange
-            var blockedQueueServiceMock = new Mock<IBlockedQueueService>();
-            var serviceBusSenderServiceMock = new Mock<IServiceBusSenderService>();
             blockedQueueServiceMock.Setup(service => service.IsCompleted()).Returns(false);
             blockedQueueServiceMock.SetupSequence(service => service.Take(It.IsAny<int>()))
                 .Returns(root)
@@ -91,19 +98,51 @@ namespace ReceiverServiceTests.Services.Events
                 .Returns(root)
                 .Returns(root)
                 .Returns(root)
-                .Returns(root);
+                .Returns(root)
+                .Returns(() =>
+                {
+                    Thread.Sleep(2000);
+                    return null;
+                });
 
             var eventConsumerService =
                 new EventConsumerService(blockedQueueServiceMock.Object, serviceBusSenderServiceMock.Object);
 
             // Act
             eventConsumerService.ConsumeMessagesFromQueue();
-            Thread.Sleep(500);
+            Thread.Sleep(2500);
 
             // Assert
             serviceBusSenderServiceMock.Verify(
                 service => service.SendMessage(It.IsAny<List<string>>()),
                 Times.Exactly(2)
+            );
+        }
+        
+        [Fact]
+        public void ConsumeMessagesFromQueue_OneElementInQueue_SendMessages()
+        {
+            // Arrange
+            blockedQueueServiceMock.Setup(service => service.IsCompleted()).Returns(false);
+            blockedQueueServiceMock.SetupSequence(service => service.Take(It.IsAny<int>()))
+                .Returns(root)
+                .Returns(() =>
+                {
+                    Thread.Sleep(2000);
+                    return null;
+                });
+
+            var eventConsumerService =
+                new EventConsumerService(blockedQueueServiceMock.Object, serviceBusSenderServiceMock.Object);
+
+            // Act
+            eventConsumerService.ConsumeMessagesFromQueue();
+            Thread.Sleep(2500);
+
+            // Assert
+            serviceBusSenderServiceMock.Verify(
+                service => service.SendMessage(It.IsAny<List<string>>()),
+                Times.Exactly(1)
             );
         }
     }

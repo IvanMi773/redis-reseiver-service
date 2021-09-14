@@ -5,6 +5,11 @@
     &lt;TestId&gt;xUnit::FF1A9DC3-0800-42EF-84EE-272041BCCFD7::net5.0::ReceiverServiceTests.Services.Events.EventConsumerServiceTest&lt;/TestId&gt;
   &lt;/TestAncestor&gt;
 &lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=a6424a3a_002Dd24d_002D4b45_002D86bb_002D62ac9027cc43/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="Should_Add_Six_Messages_And_Send_In_Two_Batches" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;xUnit::FF1A9DC3-0800-42EF-84EE-272041BCCFD7::net5.0::ReceiverServiceTests.Services.Events.EventConsumerServiceTest.Should_Add_Six_Messages_And_Send_In_Two_Batches&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
+&lt;/SessionState&gt;</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=e7322820_002Dcf74_002D4130_002D9bbd_002Dee2c75a2a9ae/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="Should_Add_Three_Messages_And_Send_It" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
   &lt;TestAncestor&gt;
     &lt;TestId&gt;xUnit::FF1A9DC3-0800-42EF-84EE-272041BCCFD7::net5.0::ReceiverServiceTests.Services.Events.EventConsumerServiceTest&lt;/TestId&gt;
