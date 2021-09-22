@@ -21,5 +21,12 @@ namespace ReceiverService.Repositories
         {
             return _database.ListLeftPop(listName);
         }
+
+        public string GetFromHash(string hashName, string key)
+        {
+            var data = _database.HashGet(hashName, key);
+            _database.HashDelete(hashName, key);
+            return data;
+        }
     }
 }
