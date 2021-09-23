@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using ReceiverService.Entities;
 
 namespace HttpServiceBus
 {
@@ -23,7 +25,7 @@ namespace HttpServiceBus
         {
             Task.Run(async () =>
             {
-                List<string> events = new List<string>();
+                List<ExtendedRoot> events = new List<ExtendedRoot>();
                 while (true)
                 {
                     try
@@ -36,14 +38,58 @@ namespace HttpServiceBus
                         string responseBody = await httpResponseMessage.Content.ReadAsStringAsync();
                         if (!string.IsNullOrEmpty(responseBody))
                         {
-                            events.Add(responseBody);
-                            if (events.Count == 20)
+                            Console.WriteLine("Events count: " + events.Count);
+                            events.Add(JsonSerializer.Deserialize<ExtendedRoot>(responseBody));
+                            if (events.Count == 500)
                             {
-                                Console.WriteLine("_______________________________________________");
+                                var eventsWithId1 = new List<ExtendedRoot>();
+                                var eventsWithId2 = new List<ExtendedRoot>();
+                                var eventsWithId3 = new List<ExtendedRoot>();
+                                
                                 foreach (var ev in events)
                                 {
-                                    Console.WriteLine(ev);
+                                    if (ev.Id == "Id number 1 (selected)")
+                                    {
+                                        eventsWithId1.Add(ev);
+                                    } else if (ev.Id == "Id number 2")
+                                    {
+                                        eventsWithId2.Add(ev);
+                                    } else if (ev.Id == "Id number 3")
+                                    {
+                                        eventsWithId3.Add(ev);
+                                    }
                                 }
+
+                                var countOfIncorrectFor1 = 0;
+                                for (int i = 0; i < eventsWithId1.Count - 1; i++)
+                                {
+                                    DateTime.TryParse(eventsWithId1[i].Timestamp, out var time1);
+                                    DateTime.TryParse(eventsWithId1[i + 1].Timestamp, out var time2);
+                                    if (DateTime.Compare(time1, time2) > 0)
+                                        countOfIncorrectFor1++;
+                                }
+                                
+                                var countOfIncorrectFor2 = 0;
+                                for (int i = 0; i < eventsWithId2.Count - 1; i++)
+                                {
+                                    DateTime.TryParse(eventsWithId2[i].Timestamp, out var time1);
+                                    DateTime.TryParse(eventsWithId2[i + 1].Timestamp, out var time2);
+                                    if (DateTime.Compare(time1, time2) > 0)
+                                        countOfIncorrectFor2++;
+                                }
+                                
+                                var countOfIncorrectFor3 = 0;
+                                for (int i = 0; i < eventsWithId3.Count - 1; i++)
+                                {
+                                    DateTime.TryParse(eventsWithId3[i].Timestamp, out var time1);
+                                    DateTime.TryParse(eventsWithId3[i + 1].Timestamp, out var time2);
+                                    if (DateTime.Compare(time1, time2) > 0)
+                                        countOfIncorrectFor3++;
+                                }
+                                Console.WriteLine("_______________________________________________");
+                                Console.WriteLine("Count of incorrect for id 1: " + countOfIncorrectFor1);
+                                Console.WriteLine("Count of incorrect for id 2: " + countOfIncorrectFor2);
+                                Console.WriteLine("Count of incorrect for id 3: " + countOfIncorrectFor3);
                                 Console.WriteLine("_______________________________________________");
                                 events.Clear();
                             }

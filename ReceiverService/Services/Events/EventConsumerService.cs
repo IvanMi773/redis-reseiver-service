@@ -54,7 +54,7 @@ namespace ReceiverService.Services.Events
                     var extendedRoot = RootToExtendedRootMapper.Map(root, 43);
 
                     _messages.Add(extendedRoot);
-                    if (_messages.Count == 5)
+                    if (_messages.Count == 10)
                     {
                         SendMessages();
                     }
@@ -65,8 +65,8 @@ namespace ReceiverService.Services.Events
         private void SendMessages()
         {
             var mesgs = new List<string>();
-            // _messages = _messages.OrderBy(o => o.Timestamp).ToList();
-            Console.WriteLine("________________________________________");
+            _messages = _messages.OrderBy(o => o.Timestamp).ToList();
+            
             foreach (var message in _messages)
             {
                 Console.WriteLine(JsonSerializer.Serialize(message));
@@ -84,7 +84,6 @@ namespace ReceiverService.Services.Events
                 }
             }
 
-            Console.WriteLine("________________________________________");
             _serviceBusSenderService.SendMessage(mesgs);
             _messages.Clear();
         }

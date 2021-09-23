@@ -31,10 +31,14 @@
   },
   "targets": {
     ".NETCoreApp,Version=v5.0": {
-      "HttpServiceBus/1.0.0": {
+      "ReceiverService/1.0.0": {
         "dependencies": {
-          "ReceiverService": "1.0.0",
+          "Azure.Messaging.ServiceBus": "7.3.0-beta.1",
+          "Microsoft.Extensions.Configuration.UserSecrets": "5.0.0",
+          "Moq": "4.16.1",
+          "StackExchange.Redis": "2.2.50",
           "Swashbuckle.AspNetCore": "5.6.3",
+          "xunit": "2.4.1",
           "Microsoft.AspNetCore.Antiforgery": "5.0.0.0",
           "Microsoft.AspNetCore.Authentication.Abstractions": "5.0.0.0",
           "Microsoft.AspNetCore.Authentication.Cookies": "5.0.0.0",
@@ -320,10 +324,10 @@
           "WindowsBase": "4.0.0.0"
         },
         "runtime": {
-          "HttpServiceBus.dll": {}
+          "ReceiverService.dll": {}
         },
         "compile": {
-          "HttpServiceBus.dll": {}
+          "ReceiverService.dll": {}
         }
       },
       "Azure.Core/1.17.0": {
@@ -1541,22 +1545,6 @@
         },
         "compile": {
           "lib/netstandard1.1/xunit.execution.dotnet.dll": {}
-        }
-      },
-      "ReceiverService/1.0.0": {
-        "dependencies": {
-          "Azure.Messaging.ServiceBus": "7.3.0-beta.1",
-          "Microsoft.Extensions.Configuration.UserSecrets": "5.0.0",
-          "Moq": "4.16.1",
-          "StackExchange.Redis": "2.2.50",
-          "Swashbuckle.AspNetCore": "5.6.3",
-          "xunit": "2.4.1"
-        },
-        "runtime": {
-          "ReceiverService.dll": {}
-        },
-        "compile": {
-          "ReceiverService.dll": {}
         }
       },
       "Microsoft.AspNetCore.Antiforgery/5.0.0.0": {
@@ -3260,7 +3248,7 @@
     }
   },
   "libraries": {
-    "HttpServiceBus/1.0.0": {
+    "ReceiverService/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -4188,11 +4176,6 @@
       "sha512": "sha512-7e/1jqBpcb7frLkB6XDrHCGXAbKN4Rtdb88epYxCSRQuZDRW8UtTfdTEVpdTl8s4T56e07hOBVd4G0OdCxIY2A==",
       "path": "xunit.extensibility.execution/2.4.1",
       "hashPath": "xunit.extensibility.execution.2.4.1.nupkg.sha512"
-    },
-    "ReceiverService/1.0.0": {
-      "type": "project",
-      "serviceable": false,
-      "sha512": ""
     },
     "Microsoft.AspNetCore.Antiforgery/5.0.0.0": {
       "type": "referenceassembly",
