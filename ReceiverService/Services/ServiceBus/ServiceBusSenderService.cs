@@ -40,7 +40,7 @@ namespace ReceiverService.Services.ServiceBus
             try
             {
                 await _sender.SendMessagesAsync(messageBatch);
-                _logger.LogInformation("A batch has been published");
+                // _logger.LogInformation("A batch has been published");
             }
             catch (Exception)
             {

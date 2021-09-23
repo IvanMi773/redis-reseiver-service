@@ -34,6 +34,7 @@ namespace ReceiverService
                 c.SwaggerDoc("v1", new OpenApiInfo {Title = "ReceiverService", Version = "v1"});
             });
 
+            services.AddHttpClient();
             services.AddHostedService<EventServicesRunner>();
             services.AddSingleton<IRedisProvider, RedisProvider>();
             services.AddSingleton<IRedisRepository, RedisRepository>();

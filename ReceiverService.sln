@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReceiverService", "Receiver
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReceiverServiceTests", "ReceiverServiceTests\ReceiverServiceTests.csproj", "{FF1A9DC3-0800-42EF-84EE-272041BCCFD7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpServiceBus", "HttpServiceBus\HttpServiceBus.csproj", "{6BCBDF72-2DD6-439C-B5A5-0B004B335B2E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{FF1A9DC3-0800-42EF-84EE-272041BCCFD7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FF1A9DC3-0800-42EF-84EE-272041BCCFD7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FF1A9DC3-0800-42EF-84EE-272041BCCFD7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6BCBDF72-2DD6-439C-B5A5-0B004B335B2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6BCBDF72-2DD6-439C-B5A5-0B004B335B2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6BCBDF72-2DD6-439C-B5A5-0B004B335B2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6BCBDF72-2DD6-439C-B5A5-0B004B335B2E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

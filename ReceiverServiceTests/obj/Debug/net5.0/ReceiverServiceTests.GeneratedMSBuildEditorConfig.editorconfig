@@ -7,4 +7,4 @@ build_property.PublishSingleFile =
 build_property.IncludeAllContentForSelfExtract = 
 build_property._SupportedPlatformList = Android,iOS,Linux,macOS,Windows
 build_property.RootNamespace = ReceiverServiceTests
-build_property.ProjectDir = /home/imykhailov/RiderProjects/ReceiverService/ReceiverServiceTests/
+build_property.ProjectDir = C:\Users\imykhailov\Projects\redis-reseiver-service\ReceiverServiceTests\

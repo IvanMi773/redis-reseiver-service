@@ -1,11 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using ReceiverService.Entities;
 using ReceiverService.Mappers;
+using ReceiverService.Repositories;
 using ReceiverService.Services.BlockedQueue;
 using ReceiverService.Services.ServiceBus;
+using StackExchange.Redis;
 
 namespace ReceiverService.Services.Events
 {
@@ -13,14 +17,19 @@ namespace ReceiverService.Services.Events
     {
         private readonly IBlockedQueueService _blockedQueueService;
         private readonly IServiceBusSenderService _serviceBusSenderService;
-        private readonly List<string> _messages;
+        private readonly IRedisRepository _redisRepository;
+        private readonly ILogger<EventConsumerService> _logger;
+        private List<ExtendedRoot> _messages;
 
         public EventConsumerService(IBlockedQueueService blockedQueueService,
-            IServiceBusSenderService serviceBusSenderService)
+            IServiceBusSenderService serviceBusSenderService, IRedisRepository redisRepository,
+            ILogger<EventConsumerService> logger)
         {
             _blockedQueueService = blockedQueueService;
             _serviceBusSenderService = serviceBusSenderService;
-            _messages = new List<string>();
+            _redisRepository = redisRepository;
+            _logger = logger;
+            _messages = new List<ExtendedRoot>();
         }
 
         public Task ConsumeMessagesFromQueue()
@@ -41,10 +50,11 @@ namespace ReceiverService.Services.Events
                         continue;
                     }
 
-                    var rt = RootToExtendedRootMapper.Map(root, 43);
-                    var serializedExtendedRoot = JsonSerializer.Serialize(rt);
-                    _messages.Add(serializedExtendedRoot);
-                    if (_messages.Count == 5)
+
+                    var extendedRoot = RootToExtendedRootMapper.Map(root, 43);
+
+                    _messages.Add(extendedRoot);
+                    if (_messages.Count == 10)
                     {
                         SendMessages();
                     }
@@ -54,7 +64,27 @@ namespace ReceiverService.Services.Events
 
         private void SendMessages()
         {
-            _serviceBusSenderService.SendMessage(_messages);
+            var mesgs = new List<string>();
+            _messages = _messages.OrderBy(o => o.Timestamp).ToList();
+            
+            foreach (var message in _messages)
+            {
+                Console.WriteLine(JsonSerializer.Serialize(message));
+
+                var timestamp = _redisRepository.GetFromHash("ingest-event-hub-hash", message.Id);
+                DateTime.TryParse(message.Timestamp, out var eventTimestampDate);
+                DateTime.TryParse(timestamp, out var redisTimestampDate);
+                if (string.IsNullOrEmpty(timestamp) || DateTime.Compare(eventTimestampDate, redisTimestampDate) > 0)
+                {
+                    mesgs.Add(JsonSerializer.Serialize(message));
+                }
+                else
+                {
+                    _logger.LogInformation("event don't added");
+                }
+            }
+
+            _serviceBusSenderService.SendMessage(mesgs);
             _messages.Clear();
         }
     }

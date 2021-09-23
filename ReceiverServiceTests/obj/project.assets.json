@@ -8164,19 +8164,19 @@
     ]
   },
   "packageFolders": {
-    "/home/imykhailov/.nuget/packages/": {}
+    "C:\\Users\\imykhailov\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/imykhailov/RiderProjects/ReceiverService/ReceiverServiceTests/ReceiverServiceTests.csproj",
+      "projectUniqueName": "C:\\Users\\imykhailov\\Projects\\redis-reseiver-service\\ReceiverServiceTests\\ReceiverServiceTests.csproj",
       "projectName": "ReceiverServiceTests",
-      "projectPath": "/home/imykhailov/RiderProjects/ReceiverService/ReceiverServiceTests/ReceiverServiceTests.csproj",
-      "packagesPath": "/home/imykhailov/.nuget/packages/",
-      "outputPath": "/home/imykhailov/RiderProjects/ReceiverService/ReceiverServiceTests/obj/",
+      "projectPath": "C:\\Users\\imykhailov\\Projects\\redis-reseiver-service\\ReceiverServiceTests\\ReceiverServiceTests.csproj",
+      "packagesPath": "C:\\Users\\imykhailov\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\imykhailov\\Projects\\redis-reseiver-service\\ReceiverServiceTests\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/home/imykhailov/.nuget/NuGet/NuGet.Config"
+        "C:\\Users\\imykhailov\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net5.0"
@@ -8188,8 +8188,8 @@
         "net5.0": {
           "targetAlias": "net5.0",
           "projectReferences": {
-            "/home/imykhailov/RiderProjects/ReceiverService/ReceiverService/ReceiverService.csproj": {
-              "projectPath": "/home/imykhailov/RiderProjects/ReceiverService/ReceiverService/ReceiverService.csproj"
+            "C:\\Users\\imykhailov\\Projects\\redis-reseiver-service\\ReceiverService\\ReceiverService.csproj": {
+              "projectPath": "C:\\Users\\imykhailov\\Projects\\redis-reseiver-service\\ReceiverService\\ReceiverService.csproj"
             }
           }
         }
@@ -8243,7 +8243,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/5.0.400/RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Users\\imykhailov\\.dotnet\\sdk\\5.0.400\\RuntimeIdentifierGraph.json"
       }
     }
   }
