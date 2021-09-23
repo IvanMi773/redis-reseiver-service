@@ -23,8 +23,6 @@ namespace ReceiverService.Services.BlockedQueue
         public void Add(Root root)
         {
             _collection.TryAdd(root);
-            
-            _logger.LogInformation("complete adding");
         }
 
         public Root Take(int milliseconds)

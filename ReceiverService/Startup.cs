@@ -35,7 +35,6 @@ namespace ReceiverService
             });
 
             services.AddHttpClient();
-            services.AddHostedService<ServiceBusReceiverService>();
             services.AddHostedService<EventServicesRunner>();
             services.AddSingleton<IRedisProvider, RedisProvider>();
             services.AddSingleton<IRedisRepository, RedisRepository>();

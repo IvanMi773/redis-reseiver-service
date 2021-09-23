@@ -1,18 +1,19 @@
-﻿using System.Net.Http;
-using System.Net.Http.Headers;
+﻿using System;
+using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace ReceiverService.Services
+namespace HttpServiceBus
 {
-    public class ServiceBusReceiverService : IHostedService
+    public class ServiceBusReceiver : IHostedService
     {
         private readonly HttpClient _httpClient;
-        private readonly ILogger<ServiceBusReceiverService> _logger;
+        private readonly ILogger<ServiceBusReceiver> _logger;
 
-        public ServiceBusReceiverService(HttpClient httpClient, ILogger<ServiceBusReceiverService> logger)
+        public ServiceBusReceiver(HttpClient httpClient, ILogger<ServiceBusReceiver> logger)
         {
             _httpClient = httpClient;
             _logger = logger;
@@ -22,6 +23,7 @@ namespace ReceiverService.Services
         {
             Task.Run(async () =>
             {
+                List<string> events = new List<string>();
                 while (true)
                 {
                     try
@@ -34,7 +36,17 @@ namespace ReceiverService.Services
                         string responseBody = await httpResponseMessage.Content.ReadAsStringAsync();
                         if (!string.IsNullOrEmpty(responseBody))
                         {
-                            _logger.LogInformation(responseBody);
+                            events.Add(responseBody);
+                            if (events.Count == 20)
+                            {
+                                Console.WriteLine("_______________________________________________");
+                                foreach (var ev in events)
+                                {
+                                    Console.WriteLine(ev);
+                                }
+                                Console.WriteLine("_______________________________________________");
+                                events.Clear();
+                            }
                         }
                     }
                     catch (HttpRequestException)
@@ -49,7 +61,7 @@ namespace ReceiverService.Services
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            throw new System.NotImplementedException();
+            return Task.CompletedTask;
         }
     }
 }
